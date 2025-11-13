@@ -1,2 +1,10 @@
-testing
+```{r}
+nba <- read.csv("data/nba_final.csv", stringsAsFactors = FALSE)
+cols_needed <- c("PTS","MP","FG","X3P","FT","FT.","Age","FG.","AST","Pos1")
+nba_mod <- na.omit(nba[, cols_needed])
+
+mod <- lm(PTS ~ MP + FG + X3P + FT + `FT.` + Age + `FG.` + AST + Pos1 +
+          MP:FG + Pos1:X3P, data = nba_mod)
+
+```
 
