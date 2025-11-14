@@ -1,3 +1,11 @@
+---
+title: "STA302-FINAL-PROJECT"
+author: "ARINDAM DATTA"
+date: "November 14, 2025'"
+output:  
+  html_document:
+    keep_md: true
+---
 Import dataset.
 ```{r}
 nba_uncleaned <- read.csv("data/nba_final.csv", stringsAsFactors = FALSE)
