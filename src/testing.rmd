@@ -16,9 +16,20 @@ of missing data in the model. Omit variable 'Role' due to variable 'Pos' being a
 efficiency calculated by 'XiP'/'XiPA'. Omit 'FG' due to the fact that 'FG' = 3*'X3P' + 2*'X2P' + 'FT'. Omit Player names and player 
 id since observations can be indexed in the csv file to identify problematic points. We choose only to include 'Pos1' since players 
 played this position majority of the time. This leads to the model below.
-```{r}
+```{r, fig.width=8, fig.height=11}
 cols_needed <- c("PTS","MP","X3P.","X2P.","FT.","Age","AST","Pos1","STL","BLK","TOV","PF","TRB")
 nba <- na.omit(nba_uncleaned[, cols_needed])
 model1 <- lm(PTS ~ ., data=nba)
 summary(model1)
+e_hat <- resid(model1)
+y_hat <- fitted(model1)
+par(mfrow=c(4,3))
+plot(nba$PTS ~ y_hat, ylab="PTS", xlab="Fitted")
+plot(e_hat ~ y_hat, ylab="Residuals", xlab="Fitted")
+for(i in c(4, 6, 10, 13, )){
+  plot(e_hat ~ nba[,i], ylab="Residuals", xlab=names(nba)[i])
+}
+plot(e_hat, ylab="Residuals", xlab="Observation number")
+qqnorm(e_hat)
+qqline(e_hat)
 ```
