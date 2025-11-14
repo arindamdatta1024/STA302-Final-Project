@@ -10,7 +10,12 @@ Import dataset.
 ```{r}
 nba_uncleaned <- read.csv("data/nba_final.csv", stringsAsFactors = FALSE)
 ```
-Create initial model, omit variables 'FVot', 'FRank', 'PVot', 'PRank', 'Mvot', 'MRank' due to many NA entries which may cause large amounts of missing data in the model. Omit variable 'Role' due to variable 'Pos' being an extension. Omit 'Salary', 'mean_views', 'Season', 'Conference' due to logic of points in games. Instead of using 'XiP', 'XiPA' where i in {2, 3} use only 'XiP.' since this records efficiency calculated by 'XiP'/'XiPA'. Omit 'FG' due to the fact that 'FG' = 3*'X3P' + 2*'X2P' + 'FT'. Omit Player names and player id since observations can be indexed in the csv file to identify problematic points. We choose only to include 'Pos1' since players played this position majority of the time. This leads to the model below.
+Create initial model, omit variables 'FVot', 'FRank', 'PVot', 'PRank', 'Mvot', 'MRank' due to many NA entries which may cause large amounts 
+of missing data in the model. Omit variable 'Role' due to variable 'Pos' being an extension. Omit 'Salary', 'mean_views', 'Season', 
+'Conference' due to logic of points in games. Instead of using 'XiP', 'XiPA' where i in {2, 3} use only 'XiP.' since this records 
+efficiency calculated by 'XiP'/'XiPA'. Omit 'FG' due to the fact that 'FG' = 3*'X3P' + 2*'X2P' + 'FT'. Omit Player names and player 
+id since observations can be indexed in the csv file to identify problematic points. We choose only to include 'Pos1' since players 
+played this position majority of the time. This leads to the model below.
 ```{r}
 cols_needed <- c("PTS","MP","X3P.","X2P.","FT.","Age","AST","Pos1","STL","BLK","TOV","PF","TRB")
 nba <- na.omit(nba_uncleaned[, cols_needed])
