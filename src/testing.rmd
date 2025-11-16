@@ -8,6 +8,7 @@ output:
 ---
 Import dataset.
 ```{r}
+library(car)
 nba_uncleaned <- read.csv("data/nba_final.csv", stringsAsFactors = FALSE)
 ```
 Create initial model, omit variables 'FVot', 'FRank', 'PVot', 'PRank', 'Mvot', 'MRank' due to many NA entries which may cause large amounts 
@@ -16,20 +17,70 @@ of missing data in the model. Omit variable 'Role' due to variable 'Pos' being a
 efficiency calculated by 'XiP'/'XiPA'. Omit 'FG' due to the fact that 'FG' = 3*'X3P' + 2*'X2P' + 'FT'. Omit Player names and player 
 id since observations can be indexed in the csv file to identify problematic points. We choose only to include 'Pos1' since players 
 played this position majority of the time. This leads to the model below.
-```{r, fig.width=8, fig.height=11}
+```{r}
 cols_needed <- c("PTS","MP","X3P.","X2P.","FT.","Age","AST","Pos1","STL","BLK","TOV","PF","TRB")
 nba <- na.omit(nba_uncleaned[, cols_needed])
 model1 <- lm(PTS ~ ., data=nba)
 summary(model1)
+```
+Plot residual and qq plots.
+```{r, fig.width=8, fig.height=11}
 e_hat <- resid(model1)
 y_hat <- fitted(model1)
-par(mfrow=c(4,3))
+cols_needed_new <- c("PTS","MP","X3P.","X2P.","FT.","Age","AST","STL","BLK","TOV","PF","TRB")
+par(mfrow=c(4,5))
 plot(nba$PTS ~ y_hat, ylab="PTS", xlab="Fitted")
 plot(e_hat ~ y_hat, ylab="Residuals", xlab="Fitted")
-for(i in c(4, 6, 10, 13, )){
-  plot(e_hat ~ nba[,i], ylab="Residuals", xlab=names(nba)[i])
+for(c in cols_needed_new){
+  plot(e_hat ~ nba[[c]], ylab="Residuals", xlab=c)
 }
 plot(e_hat, ylab="Residuals", xlab="Observation number")
 qqnorm(e_hat)
 qqline(e_hat)
+```
+By observation, there are many indications of non-constant variance violations present and linearity.
+```{r}
+boxCox((model1))
+cubedPTS <- (nba$PTS)^0.33
+model2 <- lm(cubedPTS ~ ., data=nba)
+summary(model2)
+```
+
+
+```{r, fig.width=8, fig.height=11}
+e_hat2 <- resid(model2)
+y_hat2 <- fitted(model2)
+par(mfrow=c(4,5))
+plot(cubedPTS ~ y_hat2, ylab="PTS", xlab="Fitted")
+plot(e_hat2 ~ y_hat2, ylab="Residuals", xlab="Fitted")
+for(c in cols_needed_new){
+  plot(e_hat2 ~ nba[[c]], ylab="Residuals", xlab=c)
+}
+plot(e_hat, ylab="Residuals", xlab="Observation number")
+qqnorm(e_hat2)
+qqline(e_hat2)
+```
+Create new model and introduce interaction term 'MP':'Pos1'.
+```{r}
+model3 <- lm(PTS ~ MP + X3P. + X2P. + FT. + Age + AST + Pos1 + STL + BLK + TRB + TOV + PF + MP:Pos1, data=nba)
+summary(model3)
+```
+Using partial F-test, test a new model removing variables of low significance such as 'Age'. And defensive attributes such as 'BLK', 'STL'.
+```{r}
+model4 <- lm(PTS ~ MP + X3P. + X2P. + FT. + Age + AST + Pos1 + TRB + TOV + PF + MP:Pos1, data=nba)
+anova(model4, model3)
+```
+Since value is <0.05 we accept the null hypothesis of the previous coefficients being 0. Now check residual and qq plot of newest model.
+```{r, fig.width=8, fig.height=11}
+e_hat4 <- resid(model4)
+y_hat4 <- fitted(model4)
+par(mfrow=c(4,5))
+plot(nba$PTS ~ y_hat4, ylab="PTS", xlab="Fitted")
+plot(e_hat4 ~ y_hat4, ylab="Residuals", xlab="Fitted")
+for(c in c("PTS","MP","X3P.","X2P.","FT.","AST","TOV","PF","TRB")){
+  plot(e_hat4 ~ nba[[c]], ylab="Residuals", xlab=c)
+}
+plot(e_hat4, ylab="Residuals", xlab="Observation number")
+qqnorm(e_hat4)
+qqline(e_hat4)
 ```
